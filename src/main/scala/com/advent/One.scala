@@ -2,10 +2,9 @@ package com.advent
 
 import scala.math.abs
 
-
 class One {
 
-  private def parseLists(input: String) = {
+  private def parseLists(input: String): (List[Int], List[Int]) = {
     val lines = input.split("\n").toList.map(_.trim.split("   ").map(_.toInt))
     val list1 = lines.map(_(0))
     val list2 = lines.map(_(1))
