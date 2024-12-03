@@ -16,6 +16,8 @@ class Three {
   private val Prefix: String = "mul("
   private val Comma: Char = ','
   private val Suffix: Char = ')'
+  private val Do: String = "do()"
+  private val Dont: String = "don't()"
 
   // pattern: mul(<int>,<int>)
   // returns either the index where it failed to match or two numbers to multiply (as Strings)
@@ -60,9 +62,48 @@ class Three {
     }
     res
   }
-  
+
   def part1(input: String): Long = {
     val parsed = parseAllPart1(input)
+    parsed.map { case (num1, num2) => num1.toLong * num2.toLong }.sum
+  }
+
+  def parseAllPart2(input: String): List[(String, String)] = {
+    var enabled = true
+    var i = 0
+    var res = List[(String, String)]()
+    while (i < input.length) {
+      if (
+        i + Do.length < input.length
+        && input.substring(i, i + Do.length) == Do
+      ) {
+        enabled = true
+        i += Do.length
+      } else if (
+        i + Dont.length < input.length
+        && input.substring(i, i + Dont.length) == Dont
+      ) {
+        enabled = false
+        i += Dont.length
+      } else if (enabled) {
+        parseMul(input, i) match {
+          case Some((num1, num2)) =>
+            if (enabled) {
+              res = (num1, num2) :: res
+            }
+            i += num1.length + num2.length + 6
+          case None =>
+            i += 1
+        }
+      } else {
+        i += 1
+      }
+    }
+    res
+  }
+
+  def part2(input: String): Long = {
+    val parsed = parseAllPart2(input)
     parsed.map { case (num1, num2) => num1.toLong * num2.toLong }.sum
   }
 }
