@@ -9,11 +9,11 @@ class OneTest extends AnyWordSpec with should.Matchers {
     "work for an example" in {
       val input =
         """3   4
-                  4   3
-                  2   5
-                  1   3
-                  3   9
-                  3   3""".stripMargin
+          |4   3
+          |2   5
+          |1   3
+          |3   9
+          |3   3""".stripMargin
       new One().part1(input) shouldEqual 11
     }
   }
@@ -22,11 +22,11 @@ class OneTest extends AnyWordSpec with should.Matchers {
     "work for an example" in {
       val input =
         """3   4
-                    4   3
-                    2   5
-                    1   3
-                    3   9
-                    3   3""".stripMargin
+          |4   3
+          |2   5
+          |1   3
+          |3   9
+          |3   3""".stripMargin
       new One().part2(input) shouldEqual 31
     }
   }
