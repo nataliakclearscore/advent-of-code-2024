@@ -57,7 +57,6 @@ class Twelve {
       .sum
   }
 
-  // perimeter equals to outer perimeter of the region itself plus all outer perimeters of the inner regions
   def part1(map: Array[Array[Char]]) = {
     val visited: Array[Array[Boolean]] = Array.ofDim(map.length, map(0).length)
     var regions: List[(Char, List[(Int, Int)])] = List.empty
@@ -75,8 +74,78 @@ class Twelve {
       .map(region => {
         val (track, coords) = region
         val area = coords.size
-        //val perimeter = calcPerimeter(region)
         val perimeter = calcPerimeter(map, coords, track)
+        area * perimeter
+      })
+      .sum
+  }
+
+  def matches(map: Array[Array[Char]], loc: (Int, Int), track: Char) =
+    validLoc(map, loc) && map(loc._1)(loc._2) == track
+
+  def calcCorners(
+      map: Array[Array[Char]],
+      region: List[(Int, Int)],
+      track: Char
+  ): Int = {
+    // count all sides that are not in the region
+    region
+      .map(loc => {
+        val left = Horizontal2(loc)
+        val right = Horizontal1(loc)
+        val up = Vertical2(loc)
+        val down = Vertical1(loc)
+        val corners = List(
+          // outer corners
+          !matches(map, left, track) && !matches(map, up, track),
+          !matches(map, right, track) && !matches(map, up, track),
+          !matches(map, right, track) && !matches(map, down, track),
+          !matches(map, left, track) && !matches(map, down, track),
+          // inner corners
+          matches(map, left, track) && matches(map, up, track) && !matches(
+            map,
+            Diagonal2(loc),
+            track
+          ),
+          matches(map, right, track) && matches(map, up, track) && !matches(
+            map,
+            Diagonal4(loc),
+            track
+          ),
+          matches(map, right, track) && matches(map, down, track) && !matches(
+            map,
+            Diagonal1(loc),
+            track
+          ),
+          matches(map, left, track) && matches(map, down, track) && !matches(
+            map,
+            Diagonal3(loc),
+            track
+          )
+        )
+        corners.count(identity)
+      })
+      .sum
+  }
+
+  def part2(map: Array[Array[Char]]) = {
+    val visited: Array[Array[Boolean]] = Array.ofDim(map.length, map(0).length)
+    var regions: List[(Char, List[(Int, Int)])] = List.empty
+    for (i <- map.indices) {
+      for (j <- map(0).indices) {
+        if (!visited(i)(j)) {
+          val cur = map(i)(j)
+          val coords = buildRegion(map, cur, (i, j), visited)
+          regions = (cur, coords) :: regions
+        }
+      }
+    }
+
+    regions
+      .map(region => {
+        val (track, coords) = region
+        val area = coords.size
+        val perimeter = calcCorners(map, coords, track) // THE ONLY CHANGE
         area * perimeter
       })
       .sum

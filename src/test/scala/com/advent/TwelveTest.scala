@@ -138,4 +138,77 @@ class TwelveTest extends AnyWordSpec with should.Matchers {
       underTest.part1(map) shouldEqual 1930
     }
   }
+
+  "calcCorners" should {
+    "work for ex 1" in {
+      val input =
+        """AAAA
+          |BBCD
+          |BBCC
+          |EEEC""".stripMargin
+      val map: Array[Array[Char]] =
+        input.split("\n").map(_.trim.toCharArray)
+      // valids
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'A', (0, 0), Array.ofDim[Boolean](4, 4)),
+        'A'
+      ) shouldEqual 4
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'B', (1, 0), Array.ofDim[Boolean](4, 4)),
+        'B'
+      ) shouldEqual 4
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'C', (1, 2), Array.ofDim[Boolean](4, 4)),
+        'C'
+      ) shouldEqual 8
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'E', (3, 0), Array.ofDim[Boolean](4, 4)),
+        'E'
+      ) shouldEqual 4
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'D', (1, 3), Array.ofDim[Boolean](4, 4)),
+        'D'
+      ) shouldEqual 4
+    }
+
+    "work for ex 2" in {
+      val input =
+        """EEEEE
+          |EXXXX
+          |EEEEE
+          |EXXXX
+          |EEEEE""".stripMargin
+      val map: Array[Array[Char]] =
+        input.split("\n").map(_.trim.toCharArray)
+      // valids
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'E', (0, 0), Array.ofDim[Boolean](5, 5)),
+        'E'
+      ) shouldEqual 12
+    }
+
+    "work for ex 3" in {
+      val input =
+        """AAAAAA
+          |AAABBA
+          |AAABBA
+          |ABBAAA
+          |ABBAAA
+          |AAAAAA""".stripMargin
+      val map: Array[Array[Char]] =
+        input.split("\n").map(_.trim.toCharArray)
+      // valids
+      underTest.calcCorners(
+        map,
+        underTest.buildRegion(map, 'A', (0, 0), Array.ofDim[Boolean](6, 6)),
+        'A'
+      ) shouldEqual 12
+    }
+  }
 }
