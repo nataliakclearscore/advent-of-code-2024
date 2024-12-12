@@ -16,28 +16,6 @@ class Twelve {
     x >= 0 & y >= 0 & x < arr.length & y < arr(0).length
   }
 
-  def area(
-      map: Array[Array[Char]],
-      track: Char,
-      loc: (Int, Int),
-      visited: Array[Array[Boolean]]
-  ): Int = {
-    val (x, y) = loc
-    if (!validLoc(map, loc) || visited(x)(y) || map(x)(y) != track) {
-      0
-    } else {
-      visited(x)(y) = true
-      1 +
-        area(map, track, Horizontal1(loc), visited) +
-        area(map, track, Horizontal2(loc), visited) +
-        area(map, track, Vertical1(loc), visited) +
-        area(map, track, Vertical2(loc), visited)
-    }
-  }
-
-  def hasChar(map: Array[Array[Char]], track: Char, loc: (Int, Int)): Boolean =
-    validLoc(map, loc) && map(loc._1)(loc._2) == track
-
   def buildRegion(
       map: Array[Array[Char]],
       track: Char,
@@ -57,21 +35,7 @@ class Twelve {
     }
   }
 
-  def calcPerimeter(region: List[(Int, Int)]): Int = {
-    // count all sides that are not in the region
-    region
-      .map(loc => {
-        List(
-          !region.contains(Horizontal1(loc)),
-          !region.contains(Horizontal2(loc)),
-          !region.contains(Vertical1(loc)),
-          !region.contains(Vertical2(loc))
-        ).count(identity)
-      })
-      .sum
-  }
-
-  def calcPerimeterV2(
+  def calcPerimeter(
       map: Array[Array[Char]],
       region: List[(Int, Int)],
       track: Char
@@ -112,7 +76,7 @@ class Twelve {
         val (track, coords) = region
         val area = coords.size
         //val perimeter = calcPerimeter(region)
-        val perimeter = calcPerimeterV2(map, coords, track)
+        val perimeter = calcPerimeter(map, coords, track)
         area * perimeter
       })
       .sum
