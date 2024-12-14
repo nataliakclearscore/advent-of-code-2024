@@ -3,6 +3,8 @@ package com.advent
 class Thirteen {
 
   // solving linear equations
+  // as * aX + bs * bX = pX
+  // as * aY + bs * bY = pY
   def part1Line(
       a: (Long, Long),
       b: (Long, Long),
@@ -16,10 +18,10 @@ class Thirteen {
     val den = aY * bX - aX * bY
 
     if (num % den == 0) {
-      val y = num / den
-      if ((pX - bX * y) % aX == 0) {
-        val x = (pX - bX * y) / aX
-        Some((x, y))
+      val bs = num / den
+      if ((pX - bX * bs) % aX == 0) {
+        val as = (pX - bX * bs) / aX
+        Some((as, bs))
       } else {
         None
       }
