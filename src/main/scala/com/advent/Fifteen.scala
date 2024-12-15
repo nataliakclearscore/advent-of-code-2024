@@ -123,4 +123,59 @@ class Fifteen {
       )
     newGrid
   }
+
+  def canShiftBoxesPart2(
+                     grid: Array[Array[Char]],
+                     box: (Int, Int),
+                     moveF: (Int, Int) => (Int, Int)
+                   ): Option[(Int, Int)] = {
+    val (boxI, boxJ) = box
+    val (boxNewI, boxNewJ) = moveF(boxI, boxJ)
+    val nextCell = grid(boxNewI)(boxNewJ)
+    if (nextCell == '.') {
+      Some(boxNewI, boxNewJ)
+    } else if (nextCell == '[' || nextCell == ']') {
+      canShiftBoxesPart2(grid, (boxNewI, boxNewJ), moveF)
+    } else {
+      None
+    }
+  }
+
+  def moveOncePart2(
+                grid: Array[Array[Char]],
+                robot: (Int, Int),
+                moveF: (Int, Int) => (Int, Int)
+              ): (Int, Int) = {
+    val (i, j) = robot
+    val (nextI, nextJ) = moveF(i, j)
+    val nextCell = grid(nextI)(nextJ)
+    if (nextCell == '.') { // free space
+      swap(grid, robot, (nextI, nextJ))
+      (nextI, nextJ)
+    } else if (nextCell == '[' || nextCell == ']') { // box
+      if(moveF == Horizontal1 || moveF == Horizontal2) { // horizontal move
+        val boxNewOpt = canShiftBoxesPart2(grid, (nextI, nextJ), moveF)
+        boxNewOpt match { // box can be shifted
+          case Some(boxNew) =>
+            if(moveF == Horizontal1) {
+              for (k <- boxNew._2 until nextJ by -1) {
+                swap(grid, (nextI, k), (nextI, k - 1))
+              }
+            } else {
+              for (k <- boxNew._2 until nextJ) {
+                swap(grid, (nextI, k), (nextI, k + 1))
+              }
+            }
+            swap(grid, robot, (nextI, nextJ))
+            (nextI, nextJ)
+          case None => // box cannot be shifted
+            robot
+        }
+      } else {
+        robot
+      }
+    } else { // wall
+      robot
+    }
+  }
 }

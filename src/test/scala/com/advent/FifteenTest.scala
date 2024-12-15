@@ -116,7 +116,56 @@ class FifteenTest extends AnyWordSpec with should.Matchers {
                            |##[]....[]....[]..##
                            |##..[][]..[]..[][]##
                            |##........[]......##
-                           |####################""".stripMargin.split("\n").map(_.toCharArray)
+                           |####################""".stripMargin
+        .split("\n")
+        .map(_.toCharArray)
+    }
+
+    "moveOncePart2 horizontal" in {
+      val (grid, commands) = parse(input)
+      val part2Grid = underTest.toPart2Grid(grid)
+      var robot: (Int, Int) = (
+        part2Grid.indexWhere(_.contains('@')),
+        part2Grid.find(_.contains('@')).get.indexOf('@')
+      )
+
+      robot =
+        underTest.moveOncePart2(part2Grid, robot, underTest.moveFunction('^'))
+      for (i <- 0 until 10) {
+        robot =
+          underTest.moveOncePart2(part2Grid, robot, underTest.moveFunction('>'))
+      }
+      part2Grid shouldBe
+        """####################
+          |##....[]....[]..[]##
+          |##............[]..##
+          |##..[][].....@[][]##
+          |##....[]......[]..##
+          |##[]##....[]......##
+          |##[]....[]....[]..##
+          |##..[][]..[]..[][]##
+          |##........[]......##
+          |####################""".stripMargin
+          .split("\n")
+          .map(_.toCharArray)
+
+      for (i <- 0 until 10) {
+        robot =
+          underTest.moveOncePart2(part2Grid, robot, underTest.moveFunction('<'))
+      }
+      part2Grid shouldBe
+        """####################
+          |##....[]....[]..[]##
+          |##............[]..##
+          |##[][]@.......[][]##
+          |##....[]......[]..##
+          |##[]##....[]......##
+          |##[]....[]....[]..##
+          |##..[][]..[]..[][]##
+          |##........[]......##
+          |####################""".stripMargin
+          .split("\n")
+          .map(_.toCharArray)
     }
   }
 
@@ -196,7 +245,7 @@ class FifteenTest extends AnyWordSpec with should.Matchers {
 
     "part1" in {
       val (grid, commands) = parse(input)
-      underTest.part1(grid, commands) shouldEqual 0
+      underTest.part1(grid, commands) shouldEqual 1383666
     }
   }
 }
