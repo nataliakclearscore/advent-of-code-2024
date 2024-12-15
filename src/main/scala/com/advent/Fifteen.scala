@@ -124,28 +124,71 @@ class Fifteen {
     newGrid
   }
 
-  def canShiftBoxesPart2(
-                     grid: Array[Array[Char]],
-                     box: (Int, Int),
-                     moveF: (Int, Int) => (Int, Int)
-                   ): Option[(Int, Int)] = {
+  def canShiftBoxesPart2Horizontal(
+      grid: Array[Array[Char]],
+      box: (Int, Int),
+      moveF: (Int, Int) => (Int, Int)
+  ): Option[(Int, Int)] = {
     val (boxI, boxJ) = box
     val (boxNewI, boxNewJ) = moveF(boxI, boxJ)
     val nextCell = grid(boxNewI)(boxNewJ)
     if (nextCell == '.') {
       Some(boxNewI, boxNewJ)
     } else if (nextCell == '[' || nextCell == ']') {
-      canShiftBoxesPart2(grid, (boxNewI, boxNewJ), moveF)
+      canShiftBoxesPart2Horizontal(grid, (boxNewI, boxNewJ), moveF)
     } else {
       None
     }
   }
 
+  def canShiftBoxesPart2Vertical(
+      grid: Array[Array[Char]],
+      box: (Int, Int),
+      moveF: (Int, Int) => (Int, Int)
+  ): (Boolean, List[(Int, Int, Char)]) = {
+    var result = true
+    val (boxI, boxJ) = box
+    val queue = scala.collection.mutable.Queue[(Int, Int)](box)
+    val toShift = scala.collection.mutable
+      .ListBuffer[(Int, Int, Char)]((boxI, boxJ, grid(boxI)(boxJ)))
+
+    if (grid(boxI)(boxJ) == '[') {
+      queue.enqueue((boxI, boxJ + 1))
+      toShift.append((boxI, boxJ + 1, ']'))
+    } else {
+      queue.enqueue((boxI, boxJ - 1))
+      toShift.append((boxI, boxJ - 1, '['))
+    }
+
+    while (result && queue.nonEmpty) {
+      val (i, j) = queue.dequeue()
+      val (nextI, nextJ) = moveF(i, j)
+      val nextCell = grid(nextI)(nextJ)
+      if (nextCell == '#') { // hit the wall
+        result = false
+      } else if (nextCell == '[') {
+        queue.enqueue((nextI, nextJ))
+        toShift.append((nextI, nextJ, '['))
+
+        queue.enqueue((nextI, nextJ + 1))
+        toShift.append((nextI, nextJ + 1, ']'))
+      } else if (nextCell == ']') {
+        queue.enqueue((nextI, nextJ))
+        toShift.append((nextI, nextJ, ']'))
+
+        queue.enqueue((nextI, nextJ - 1))
+        toShift.append((nextI, nextJ - 1, '['))
+      }
+    }
+
+    (result, toShift.toList)
+  }
+
   def moveOncePart2(
-                grid: Array[Array[Char]],
-                robot: (Int, Int),
-                moveF: (Int, Int) => (Int, Int)
-              ): (Int, Int) = {
+      grid: Array[Array[Char]],
+      robot: (Int, Int),
+      moveF: (Int, Int) => (Int, Int)
+  ): (Int, Int) = {
     val (i, j) = robot
     val (nextI, nextJ) = moveF(i, j)
     val nextCell = grid(nextI)(nextJ)
@@ -153,11 +196,12 @@ class Fifteen {
       swap(grid, robot, (nextI, nextJ))
       (nextI, nextJ)
     } else if (nextCell == '[' || nextCell == ']') { // box
-      if(moveF == Horizontal1 || moveF == Horizontal2) { // horizontal move
-        val boxNewOpt = canShiftBoxesPart2(grid, (nextI, nextJ), moveF)
+      if (moveF == Horizontal1 || moveF == Horizontal2) { // horizontal move
+        val boxNewOpt =
+          canShiftBoxesPart2Horizontal(grid, (nextI, nextJ), moveF)
         boxNewOpt match { // box can be shifted
           case Some(boxNew) =>
-            if(moveF == Horizontal1) {
+            if (moveF == Horizontal1) {
               for (k <- boxNew._2 until nextJ by -1) {
                 swap(grid, (nextI, k), (nextI, k - 1))
               }
@@ -171,11 +215,62 @@ class Fifteen {
           case None => // box cannot be shifted
             robot
         }
+      } else if (moveF == Vertical1 || moveF == Vertical2) { // vertical move
+        val (canShift, toShift) =
+          canShiftBoxesPart2Vertical(grid, (nextI, nextJ), moveF)
+        if (canShift) {
+          toShift.foreach((i, j, _) => {
+            grid(i)(j) = '.'
+          })
+          toShift.foreach((i, j, c) => {
+            val (nextI, nextJ) = moveF(i, j)
+            grid(nextI)(nextJ) = c
+          })
+          swap(grid, robot, (nextI, nextJ))
+          (nextI, nextJ)
+        } else {
+          robot
+        }
       } else {
         robot
       }
     } else { // wall
       robot
     }
+  }
+
+  def movePart2(
+      grid: Array[Array[Char]],
+      robot: (Int, Int),
+      commands: List[Char]
+  ) = {
+    commands.foldLeft(robot)((prevRobot, command) =>
+      moveOncePart2(grid, prevRobot, moveFunction(command))
+    )
+  }
+
+  def part2(
+      grid: Array[Array[Char]],
+      commands: List[Char]
+  ): Int = {
+    val part2Grid = toPart2Grid(grid)
+    val robot: (Int, Int) = (
+      part2Grid.indexWhere(_.contains('@')),
+      part2Grid.find(_.contains('@')).get.indexOf('@')
+    )
+    movePart2(part2Grid, robot, commands)
+    part2Grid.zipWithIndex
+      .map((row, i) =>
+        row.zipWithIndex
+          .map((cell, j) =>
+            if (cell == '[') {
+              i * 100 + j
+            } else {
+              0
+            }
+          )
+          .sum
+      )
+      .sum
   }
 }
