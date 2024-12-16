@@ -26,9 +26,14 @@ class SixteenTest extends AnyWordSpec with should.Matchers {
         |#S..#.....#...#
         |###############""".stripMargin
 
-    "work" in {
+    "part 1" in {
       val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
       underTest.part1(grid) shouldEqual 7036
+    }
+
+    "part 2" in {
+      val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
+      underTest.part2(grid) shouldEqual 45
     }
   }
 
@@ -52,9 +57,14 @@ class SixteenTest extends AnyWordSpec with should.Matchers {
         |#S#.............#
         |#################""".stripMargin
 
-    "work" in {
+    "part 1" in {
       val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
       underTest.part1(grid) shouldEqual 11048
+    }
+
+    "part 2" in {
+      val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
+      underTest.part2(grid) shouldEqual 64
     }
   }
 }
