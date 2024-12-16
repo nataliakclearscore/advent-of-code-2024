@@ -148,13 +148,12 @@ class Sixteen {
   def part2(grid: Array[Array[Char]]): Int = {
     val start: Location = find(grid, 'S')
     val end: Location = find(grid, 'E')
-    val minScore = dijkstras(grid, start, end)
-    val leads = dijkstrasWithTracking(grid, start) // use leads to find all paths
+    val (minScore, leads) = dijkstrasWithTracking(grid, start, end) // use leads to find all paths
     val paths = findPaths(leads, end, List(end)) // because of how rotation cost is calculated, paths can contain some extra paths that don't have the minimum score
     paths.map(path => (calculateScore(path), path)).filter(_._1 == minScore).flatMap(_._2).toSet.size
   }
 
-  def dijkstrasWithTracking(grid: Array[Array[Char]], start: Location): Map[Location, Set[Location]] = {
+  def dijkstrasWithTracking(grid: Array[Array[Char]], start: Location, end: Location): (Int, Map[Location, Set[Location]]) = {
     val visited = mutable.Set[Location]()
     val bestScores = mutable.Map[Location, (Int, Direction)]()
     val queue: PriorityQueue[(Position, Option[Location], Int)] = PriorityQueue.empty[(Position, Option[Location], Int)](Ordering.by((_: (Position, Option[Location], Int))._3).reverse)
@@ -231,6 +230,6 @@ class Sixteen {
         }
       }
     }
-    leads.toMap
+    (bestScores(end)._1, leads.toMap)
   }
 }
