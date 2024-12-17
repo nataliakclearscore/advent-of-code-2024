@@ -87,16 +87,88 @@ class SeventeenTest extends AnyWordSpec with should.Matchers {
     }
   }
 
-  "solve" should {
-    "part 1" in {
+  "example 2" should {
+    "part 1 2024" in {
       val input =
-        """Register A: 37283687
+        """Register A: 2024
           |Register B: 0
           |Register C: 0
           |
-          |Program: 2,4,1,3,7,5,4,1,1,3,0,3,5,5,3,0""".stripMargin
+          |Program: 0,3,5,4,3,0
+          |""".stripMargin
+      val (a, b, c, program) = parse(input)
+      underTest.part1(a, b, c, program) shouldEqual "5,7,3,0"
+    }
+
+    "part 1 117440" in {
+      val input =
+        """Register A: 117440
+          |Register B: 0
+          |Register C: 0
+          |
+          |Program: 0,3,5,4,3,0
+          |""".stripMargin
+      val (a, b, c, program) = parse(input)
+      underTest.part1(a, b, c, program) shouldEqual "0,3,5,4,3,0"
+    }
+  }
+
+  "solve" should {
+    val input =
+      """Register A: 37283687
+        |Register B: 0
+        |Register C: 0
+        |
+        |Program: 2,4,1,3,7,5,4,1,1,3,0,3,5,5,3,0""".stripMargin
+
+    "part 1" in {
       val (a, b, c, program) = parse(input)
       underTest.part1(a, b, c, program) shouldEqual "1,5,3,0,2,5,2,5,3"
     }
+
+    "part 2 exploring" in {
+      val (a, b, c, program) = parse(input)
+      for (i <- 1 to 100) {
+        val res = underTest.part1(i, 0, 0, program)
+        println(s"$i: $res")
+      }
+
+      // Noticed: the output reminds me of the octal number system
+
+      underTest.part1(3, b, c, program) shouldEqual "0"
+
+      underTest.part1(24, b, c, program) shouldEqual "3,0"
+
+      underTest.part1(
+        underTest.octalToDecimal("3045").toInt,
+        b,
+        c,
+        program
+      ) shouldEqual "5,5,3,0"
+
+      underTest.part1(
+        underTest.octalToDecimal("304513010").toLong,
+        b,
+        c,
+        program
+      ) shouldEqual "1,1,3,0,3,5,5,3,0"
+
+      underTest.part1(
+        underTest.octalToDecimal("30451301045"),
+        b,
+        c,
+        program
+      ) shouldEqual "5,4,1,1,3,0,3,5,5,3,0"
+      
+      // Noticed: adding numbers to the end of the octal number adds them to the beginning of the output
+    }
+
+    "part2" in {
+      val (a, b, c, program) = parse(input)
+      underTest.part2(
+        program
+      ) shouldEqual BigInt("108107566389757")
+    }
+
   }
 }

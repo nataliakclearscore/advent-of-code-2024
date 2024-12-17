@@ -3,17 +3,17 @@ package com.advent
 class Seventeen {
 
   def process(
-      a0: Int,
-      b0: Int,
-      c0: Int,
+      a0: BigInt,
+      b0: BigInt,
+      c0: BigInt,
       program: List[Int]
-  ): (Int, Int, Int, List[Int]) = {
+  ): (BigInt, BigInt, BigInt, List[Int]) = {
     var a = a0
     var b = b0
     var c = c0
     val output = scala.collection.mutable.ListBuffer.empty[Int]
 
-    def toOperand(operandCode: Int): Int = operandCode match {
+    def toOperand(operandCode: Int): BigInt = operandCode match {
       case x if x >= 0 && x <= 3 => x
       case 4                     => a
       case 5                     => b
@@ -31,12 +31,15 @@ class Seventeen {
       val comboOperand = toOperand(literalOperand)
       opcode match {
         case 0 =>
-          // a = a / Math.pow(2, operand).toInt
-          val res = BigInt(a) >> comboOperand
-          a = res.toInt
+          //val res = a / Math.pow(2, comboOperand)
+          val res =
+            if (comboOperand.isValidInt) a >> comboOperand.toInt
+            else BigInt(0)
+          //val res = BigInt(a) >> comboOperand
+          a = res
           i += 2
         case 1 =>
-          val res = b ^ literalOperand
+          val res = b ^ BigInt(literalOperand)
           b = res
           i += 2
         case 2 =>
@@ -55,15 +58,21 @@ class Seventeen {
           i += 2
         case 5 =>
           val res = comboOperand & 0x07
-          output += res
+          output += res.toInt
           i += 2
         case 6 =>
-          val res = BigInt(a) >> comboOperand
-          b = res.toInt
+          val res =
+            if (comboOperand.isValidInt) a >> comboOperand.toInt
+            else BigInt(0)
+          //val res = BigInt(a) >> comboOperand
+          b = res
           i += 2
         case 7 =>
-          val res = BigInt(a) >> comboOperand
-          c = res.toInt
+          val res =
+            if (comboOperand.isValidInt) a >> comboOperand.toInt
+            else BigInt(0)
+          //val res = BigInt(a) >> comboOperand
+          c = res
           i += 2
         case _ =>
           throw new IllegalArgumentException(
@@ -75,11 +84,40 @@ class Seventeen {
   }
 
   def part1(
-      a0: Int,
-      b0: Int,
-      c0: Int,
+      a0: BigInt,
+      b0: BigInt,
+      c0: BigInt,
       program: List[Int]
   ): String = {
     process(a0, b0, c0, program)._4.mkString(",")
+  }
+
+  def octalToDecimal(oct: String): BigInt = {
+    BigInt(oct, 8)
+  }
+
+  def part2(program: List[Int]): BigInt = {
+    val expected = program.mkString(",")
+    var octNumStrings: List[String] = List("3")
+    for (n <- 1 until program.size) {
+      var i = 0
+      var newOctNumStrings: List[String] = List.empty
+      for (i <- 0 to 7) {
+        for (octNumStr <- octNumStrings) {
+          val testNumber = octNumStr + i
+          val testResult = part1(
+            octalToDecimal(testNumber).toLong,
+            0,
+            0,
+            program
+          )
+          if (expected.endsWith(testResult)) {
+            newOctNumStrings = testNumber :: newOctNumStrings
+          }
+        }
+      }
+      octNumStrings = newOctNumStrings.toList
+    }
+    octNumStrings.map(octalToDecimal).min
   }
 }
