@@ -97,9 +97,8 @@ class Seventeen {
   }
 
   def part2(program: List[Int]): BigInt = {
-    val expected = program.mkString(",")
-    var octNumStrings: List[String] = List("3")
-    for (n <- 1 until program.size) {
+    var octNumStrings: List[String] = List("")
+    for (n <- program.indices) {
       var i = 0
       var newOctNumStrings: List[String] = List.empty
       for (i <- 0 to 7) {
@@ -111,13 +110,15 @@ class Seventeen {
             0,
             program
           )
-          if (expected.endsWith(testResult)) {
+          val expectedEnding = program.takeRight(n + 1).mkString(",")
+          if (expectedEnding == testResult) {
             newOctNumStrings = testNumber :: newOctNumStrings
           }
         }
       }
       octNumStrings = newOctNumStrings.toList
     }
+    //println(octNumStrings)
     octNumStrings.map(octalToDecimal).min
   }
 }
