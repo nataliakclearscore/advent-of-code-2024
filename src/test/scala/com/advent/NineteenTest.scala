@@ -14,7 +14,7 @@ class NineteenTest extends AnyWordSpec with should.Matchers {
 
   private val underTest = new Nineteen
 
-  "test designs" should {
+  "test designs part 1" should {
     "test" in {
       val patterns = "r, wr, b, g, bwu, rb, gb, br".split(",\\s*").toList
       underTest.possibleDesign(patterns, "brwrr", 0) shouldEqual true
@@ -36,6 +36,48 @@ class NineteenTest extends AnyWordSpec with should.Matchers {
     "part 1" in {
       val (list1, list2) = parse(input)
       underTest.part1(list1, list2) shouldEqual 6
+    }
+
+    "part 2" in {
+      val (list1, list2) = parse(input)
+      underTest.part2(list1, list2) shouldEqual 16
+    }
+  }
+
+  "tests part 2" should {
+    "test" in {
+      val patterns = "r, wr, b, g, bwu, rb, gb, br".split(",\\s*").toList
+
+      val trie = underTest.buildTrie(patterns)
+
+      underTest.countDesigns(
+        trie,
+        "brwrr",
+        0,
+        scala.collection.mutable.Map.empty
+      ) shouldBe 2
+
+      underTest.countDesigns(
+        trie,
+        "bggr",
+        0,
+        scala.collection.mutable.Map.empty
+      ) shouldBe 1
+
+      underTest.countDesigns(
+        trie,
+        "rrbgbr",
+        0,
+        scala.collection.mutable.Map.empty
+      ) shouldBe 6
+
+      underTest
+        .countDesigns(
+          trie,
+          "ubwu",
+          0,
+          scala.collection.mutable.Map.empty
+        ) shouldBe 0
     }
   }
 }
