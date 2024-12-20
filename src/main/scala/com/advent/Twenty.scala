@@ -104,18 +104,18 @@ class Twenty {
   }
 
   def findSavings(
-                   loc1: Location,
-                   loc2: Location,
-                   bestScores: mutable.Map[Location, Int],
-                   grid: Array[Array[Char]]
-                 ): Option[Int] = {
+      loc1: Location,
+      loc2: Location,
+      bestScores: mutable.Map[Location, Int],
+      grid: Array[Array[Char]]
+  ): Option[Int] = {
     if (
       validIJ(grid, loc1.i, loc1.j)
-        && validIJ(grid, loc2.i, loc2.j)
-        && grid(loc1.i)(loc1.j) == '.'
-        && grid(loc2.i)(loc2.j) == '.'
-        && bestScores.contains(loc1)
-        && bestScores.contains(loc2)
+      && validIJ(grid, loc2.i, loc2.j)
+      && grid(loc1.i)(loc1.j) == '.'
+      && grid(loc2.i)(loc2.j) == '.'
+      && bestScores.contains(loc1)
+      && bestScores.contains(loc2)
     ) {
       val bestScoresEast = bestScores.get(loc1)
       val bestScoresWest = bestScores.get(loc2)
@@ -127,7 +127,7 @@ class Twenty {
     }
   }
 
-  def findSavings(grid: Array[Array[Char]]): mutable.Map[Int, Int] = {
+  def findSavingsPart1(grid: Array[Array[Char]]): mutable.Map[Int, Int] = {
     val start: Location = find(grid, 'S')
     val end: Location = find(grid, 'E')
     grid(start.i)(start.j) = '.'
@@ -143,7 +143,7 @@ class Twenty {
       }
     }
 
-    val result = mutable.Map[Int, Int]()
+    val savings = mutable.Map[Int, Int]()
 
     for (remove <- canRemove) {
       // try removing horizontal
@@ -151,23 +151,53 @@ class Twenty {
       val west = MoveWest(remove)
       val savedHorizontal = findSavings(east, west, bestScores, grid)
       savedHorizontal.foreach(saved =>
-        result.put(saved, result.getOrElse(saved, 0) + 1)
+        savings.put(saved, savings.getOrElse(saved, 0) + 1)
       )
 
       val north = MoveNorth(remove)
       val south = MoveSouth(remove)
       val savedVertical = findSavings(north, south, bestScores, grid)
       savedVertical.foreach(saved =>
-        result.put(saved, result.getOrElse(saved, 0) + 1)
+        savings.put(saved, savings.getOrElse(saved, 0) + 1)
       )
     }
-
-    //println(result)
-    result
+    savings
   }
 
   def part1(grid: Array[Array[Char]]): Int = {
-   val savings = findSavings(grid)
+    val savings = findSavingsPart1(grid)
+    savings.filter(_._1 >= 100).values.sum
+  }
+
+  def findSavingsPart2(grid: Array[Array[Char]], minSaved: Int = 100): mutable.Map[Int, Int] = {
+    val start: Location = find(grid, 'S')
+    val end: Location = find(grid, 'E')
+    grid(start.i)(start.j) = '.'
+    grid(end.i)(end.j) = '.'
+    val bestScoresList = dijkstras(grid, start, end).toList
+    println(s"bestScoresList size: ${bestScoresList.size}")
+
+    val savings = mutable.Map[Int, Int]()
+    for (i <- bestScoresList.indices) {
+      println(s"i: $i")
+      for (j <- i + 1 until bestScoresList.length) {
+        val bs1 = bestScoresList(i)._1
+        val bs2 = bestScoresList(j)._1
+        val minScoreDiff = math.abs(bs1.i - bs2.i) + math.abs(bs1.j - bs2.j)
+        if (minScoreDiff <= 20) {
+          val scoreDiff = math.abs(bestScoresList(i)._2 - bestScoresList(j)._2)
+          val saved = scoreDiff - minScoreDiff
+          if (minScoreDiff < scoreDiff && saved >= minSaved) {
+            savings.put(saved, savings.getOrElse(saved, 0) + 1)
+          }
+        }
+      }
+    }
+    savings
+  }
+
+  def part2(grid: Array[Array[Char]]): Int = {
+    val savings = findSavingsPart2(grid)
     savings.filter(_._1 >= 100).values.sum
   }
 }

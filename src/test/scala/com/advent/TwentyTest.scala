@@ -28,9 +28,16 @@ class TwentyTest extends AnyWordSpec with should.Matchers {
 
     "part 1" in {
       val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
-      val savings = underTest.findSavings(grid)
+      val savings = underTest.findSavingsPart1(grid)
       savings(64) shouldBe 1
       savings(4) shouldBe 14
+    }
+
+    "part 2" in {
+      val grid: Array[Array[Char]] = input.split("\n").map(_.toCharArray)
+      val savings = underTest.findSavingsPart2(grid, minSaved = 50)
+      savings(50) shouldBe 32
+      savings(76) shouldBe 3
     }
   }
 }
