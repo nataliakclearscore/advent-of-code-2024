@@ -41,11 +41,10 @@ class TwentyOne {
     throw new RuntimeException(s"Could not find $char in grid")
   }
 
-  def pressButton(
-      grid: Array[Array[Char]],
+  def findButtonFirstVertical(
       start: Location,
       end: Location
-  ): mutable.ListBuffer[Char] = {
+  ): List[Char] = {
     val path = mutable.ListBuffer.empty[Char]
     if (end.i < start.i) {
       for (_ <- start.i until end.i by -1) {
@@ -66,42 +65,110 @@ class TwentyOne {
         path += '<'
       }
     }
-    path
+    path.toList
   }
 
-  def findButton(
+  def findButtonFirstHorizontal(
+      start: Location,
+      end: Location
+  ): List[Char] = {
+    val path = mutable.ListBuffer.empty[Char]
+    if (end.j > start.j) {
+      for (_ <- start.j until end.j) {
+        path += '>'
+      }
+    } else if (end.j < start.j) {
+      for (_ <- start.j until end.j by -1) {
+        path += '<'
+      }
+    }
+
+    if (end.i < start.i) {
+      for (_ <- start.i until end.i by -1) {
+        path += '^'
+      }
+    } else if (end.i > start.i) {
+      for (_ <- start.i until end.i) {
+        path += 'v'
+      }
+    }
+    path.toList
+  }
+
+  def isValidPath(
+      grid: Array[Array[Char]],
+      start: Location,
+      end: Location,
+      path: List[Char]
+  ): Boolean = {
+    var cur = start
+    var steps = List.empty[Location]
+    for (move <- path) {
+      cur = move match {
+        case '^' => MoveNorth(cur)
+        case 'v' => MoveSouth(cur)
+        case '>' => MoveEast(cur)
+        case '<' => MoveWest(cur)
+      }
+      steps = cur :: steps
+    }
+    steps.forall { loc =>
+      validIJ(grid, loc.i, loc.j) && grid(loc.i)(loc.j) != '#'
+    }
+  }
+
+  def pressButtonWays(
       grid: Array[Array[Char]],
       start: Char,
       end: Char
-  ): mutable.ListBuffer[Char] = {
+  ): List[List[Char]] = {
     val startLoc = findLocation(grid, start)
     val endLoc = findLocation(grid, end)
-    pressButton(grid, startLoc, endLoc)
+    val horizontal = findButtonFirstVertical(startLoc, endLoc)
+    val vertical = findButtonFirstHorizontal(startLoc, endLoc)
+    if (horizontal == vertical) {
+      List(horizontal ++ List('A'))
+    } else {
+      val horizontalOpt =
+        if (isValidPath(grid, startLoc, endLoc, horizontal)) Some(horizontal)
+        else None
+      val verticalOpt =
+        if (isValidPath(grid, startLoc, endLoc, vertical)) Some(vertical)
+        else None
+      List(horizontalOpt, verticalOpt).flatten.map(_ ++ List('A'))
+    }
   }
 
-  def pressButtons(
+  def pressButtonsWays(
       grid: Array[Array[Char]],
       buttons: List[Char]
-  ): List[Char] = {
-    ('A' :: buttons)
-      .sliding(2)
-      .flatMap { case List(start, end) =>
-        findButton(grid, start, end).append('A')
+  ): List[List[Char]] = {
+    val pairs = ('A' :: buttons).zip(buttons)
+    pairs.foldLeft(List.empty[List[Char]]) {
+      case (acc: List[List[Char]], pair: (Char, Char)) => {
+        val (start, end) = pair
+        val nextOptions = pressButtonWays(grid, start, end)
+        val res = nextOptions.flatMap(next =>
+          if (acc.isEmpty) List(next) else acc.map(_ ++ next)
+        )
+        res
       }
-      .toList
+    }
   }
 
   def pressButtonsAllLayers(buttons: List[Char]): List[Char] = {
-    val directions1 = pressButtons(numericGrid, buttons)
-    val directions2 = pressButtons(directionalGrid, directions1)
-    val directions3 = pressButtons(directionalGrid, directions2)
-    directions3
+    pressButtonsWays(numericGrid, buttons)
+      .flatMap(pressButtonsWays(directionalGrid, _))
+      .flatMap(pressButtonsWays(directionalGrid, _))
+      .minBy(_.size)
   }
 
   def part1(lines: List[String]): Int = {
     lines
       .map(line =>
-        pressButtonsAllLayers(line.toCharArray.toList).size * line.dropRight(1).toInt
+        pressButtonsAllLayers(line.toCharArray.toList).size * line
+          .dropRight(1)
+          .toInt
       )
       .sum
   }

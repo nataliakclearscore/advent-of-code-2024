@@ -10,34 +10,41 @@ class TwentyOneTest extends AnyWordSpec with should.Matchers {
   "test" should {
     "operate numeric keypad" in {
       underTest
-        .findButton(underTest.numericGrid, 'A', '0')
-        .toList shouldBe List('<')
+        .pressButtonWays(underTest.numericGrid, 'A', '0') shouldBe List(
+        List('<', 'A')
+      )
       underTest
-        .findButton(underTest.numericGrid, '0', '2')
-        .toList shouldBe List('^')
+        .pressButtonWays(underTest.numericGrid, '0', '2') shouldBe List(
+        List('^', 'A')
+      )
       underTest
-        .findButton(underTest.numericGrid, '2', '9')
-        .toList shouldBe List('^', '^', '>')
+        .pressButtonWays(underTest.numericGrid, '2', '9') shouldBe List(
+        List('^', '^', '>', 'A'),
+        List('>', '^', '^', 'A')
+      )
       underTest
-        .findButton(underTest.numericGrid, '9', 'A')
-        .toList shouldBe List('v', 'v', 'v')
+        .pressButtonWays(underTest.numericGrid, '9', 'A') shouldBe List(
+        List('v', 'v', 'v', 'A')
+      )
     }
 
     "operate numeric keypad multi buttons" in {
-      underTest.pressButtons(
+      val res = underTest.pressButtonsWays(
         underTest.numericGrid,
         List('0', '2', '9', 'A')
-      ) shouldBe List('<', 'A', '^', 'A', '^', '^', '>', 'A', 'v', 'v', 'v',
-        'A')
+      )
+      res.size shouldBe 2
+      res should contain (List('<', 'A', '^', 'A', '^', '^', '>', 'A', 'v', 'v', 'v',
+      'A'))
     }
 
     "operate directional keypad" in {
       underTest
-        .findButton(underTest.directionalGrid, 'A', '^')
-        .toList shouldBe List('<')
+        .pressButtonWays(underTest.directionalGrid, 'A', '^')
+        .toList shouldBe List(List('<', 'A'))
       underTest
-        .findButton(underTest.directionalGrid, 'v', 'A')
-        .toList shouldBe List('^', '>')
+        .pressButtonWays(underTest.directionalGrid, '<', 'A')
+        .toList shouldBe List(List('>', '>', '^', 'A'))
     }
 
     "operate numeric keypad multi layers 1" in {
@@ -70,7 +77,7 @@ class TwentyOneTest extends AnyWordSpec with should.Matchers {
           |129A
           |283A
           |540A""".stripMargin
-      underTest.part1(input.split("\n").toList) shouldBe 0 // high: 141542
+      underTest.part1(input.split("\n").toList) shouldBe 137870
     }
   }
 }
