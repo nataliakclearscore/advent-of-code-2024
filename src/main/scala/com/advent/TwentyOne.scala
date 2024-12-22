@@ -156,20 +156,130 @@ class TwentyOne {
     }
   }
 
-  def pressButtonsAllLayers(buttons: List[Char]): List[Char] = {
-    pressButtonsWays(numericGrid, buttons)
-      .flatMap(pressButtonsWays(directionalGrid, _))
-      .flatMap(pressButtonsWays(directionalGrid, _))
-      .minBy(_.size)
+  def pressButtonsAllLayers(buttons: List[Char], maxLayer: Int): List[Char] = {
+    val numericOptions = pressButtonsWays(numericGrid, buttons)
+    var result: List[List[Char]] =
+      numericOptions.flatMap(pressButtonsWays(directionalGrid, _))
+
+    for (_ <- 0 until maxLayer - 1) {
+      val next = result.flatMap(pressButtonsWays(directionalGrid, _))
+      result = next
+    }
+    result.minBy(_.size)
   }
 
-  def part1(lines: List[String]): Int = {
+  def part1(lines: List[String], maxLayer: Int): Int = {
     lines
       .map(line =>
-        pressButtonsAllLayers(line.toCharArray.toList).size * line
+        pressButtonsAllLayers(line.toCharArray.toList, maxLayer).size * line
           .dropRight(1)
           .toInt
       )
       .sum
+  }
+
+  def part2(lines: List[String], maxLayer: Int): BigInt = {
+    val cache = collection.mutable.Map.empty[(String, Int), Long]
+    lines
+      .map(line =>
+        BigInt(
+          pressButtonsAllLayersPart2(
+            line.toCharArray.toList,
+            maxLayer,
+            cache
+          )
+        ) * BigInt(
+          line
+            .dropRight(1)
+            .toLong
+        )
+      )
+      .sum
+  }
+
+  // find working out in a "core moves" tests
+  val bestMove: String => String = {
+    case "<^A" => "v<<A>^A>A"
+    case "^<A" => "<Av<A>>^A"
+    case "<A"  => "v<<A>>^A"
+    case "<vA" => "v<<A>A^>A"
+    case "v<A" => "<vA<A>>^A"
+    case "^A"  => "<A>A"
+    case "vA"  => "<vA^>A"
+    case "^>A" => "<Av>A^A"
+    case ">^A" => "vA<^A>A"
+    case ">A"  => "vA^A"
+    case "v>A" => "<vA>A^A"
+    case ">vA" => "vA<A^>A"
+  }
+
+  def pressButtonsAllLayersPart2(
+      buttons: List[Char],
+      maxLayer: Int,
+      cache: mutable.Map[
+        (String, Int),
+        Long
+      ] // buttons, layer => shortest sequence
+  ): Long = {
+    val numericOptions = pressButtonsWays(numericGrid, buttons)
+    val secondKeypadOptions = numericOptions
+      .flatMap(pressButtonsWays(directionalGrid, _))
+      .map(_.mkString)
+    println(
+      "calculating secondKeypadOptions: " + numericOptions.map(_.mkString)
+    )
+    val results = secondKeypadOptions.map { option =>
+      shortestSequenceAtLayer(
+        option,
+        2,
+        maxLayer,
+        cache
+      )
+    }
+    println("")
+    println("sizes: " + results)
+    println("min: " + results.min)
+    results.min
+  }
+
+  def shortestSequenceAtLayer(
+      buttons: String,
+      layer: Int,
+      maxLayer: Int,
+      cache: mutable.Map[
+        (String, Int),
+        Long
+      ] // buttons, layer => shortest sequence
+  ): Long = {
+    if (cache.contains((buttons, layer))) {
+      cache((buttons, layer))
+    } else {
+      val pattern = "(.)\\1+" // matches any character repeated 2 or more times
+      val replacedCount = pattern.r // each repeat gives +1 to the result as it just results to A press at all keypads
+        .findAllMatchIn(buttons)
+        .map { m =>
+          m.matched.length - 1
+        }
+        .sum
+      val deduped = buttons.replaceAll(pattern, "$1") // no repeated characters
+      val parts = deduped.split('A').map(_ + "A").map(bestMove)
+      val res = if (layer == maxLayer) {
+        (parts.map(_.length).sum + replacedCount).toLong
+      } else {
+        val results =
+          parts
+            .map(part => {
+              shortestSequenceAtLayer(
+                part,
+                layer + 1,
+                maxLayer,
+                cache
+              )
+            })
+        results.sum + replacedCount
+      }
+      cache.put((buttons, layer), res)
+      res
+    }
   }
 }
