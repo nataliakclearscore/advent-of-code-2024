@@ -16,7 +16,7 @@ class TwentyThreeTest extends AnyWordSpec with should.Matchers {
 
   private val underTest = new TwentyThree
 
-  "examples part 1" should {
+  "examples" should {
     val input =
       """kh-tc
         |qp-kh
@@ -60,5 +60,11 @@ class TwentyThreeTest extends AnyWordSpec with should.Matchers {
       val pairs = parse(input)
       underTest.part1(pairs) shouldEqual 7
     }
+
+    "test part2" in {
+      val pairs = parse(input)
+      underTest.part2(pairs) shouldEqual "co,de,ka,ta"
+    }
   }
+
 }
