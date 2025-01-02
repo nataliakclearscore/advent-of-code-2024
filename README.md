@@ -1,7 +1,11 @@
 
-# Advent of Code 2024 - 🎄 Results 🎄
+# Advent of Code 2024 - 🎄 Reflection 🎄
 
-This document showcases my personal leaderboard times for the Advent of Code 2024 challenges. The table below presents my performance in both parts of each day's challenge.
+Taking part in Advent of Code was a great experience. It gave me a chance to sharpen my problem-solving skills and practice working through algorithmic challenges under time pressure.
+
+I chose Scala for this challenge since it’s the language I’m most comfortable with right now, and I thought it would help me solve problems faster. That said, I didn’t focus on writing clean, functional code this time. I leaned on things I usually avoid at work — like vars, mutable collections, whiles, and loops—just to keep things moving.
+
+I’m excited to tackle it again next year and hopefully improve my approach and rankings! 🎉
 
 ## 🌟 Results 🌟
 ```
